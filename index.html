@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Romantic Typing Website</title>
+  <!-- TailwindCSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes floatyUp {
+      0%   { transform: translateY(10px) scale(1); opacity: .85 }
+      50%  { transform: translateY(-12px) scale(1.05); opacity: 1 }
+      100% { transform: translateY(10px) scale(1); opacity: .85 }
+    }
+    @keyframes slowSpin {
+      from { transform: rotate(0deg) }
+      to   { transform: rotate(360deg) }
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+    .animate-blink {
+      animation: blink 1s step-end infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen relative overflow-hidden bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
+
+  <!-- Floating hearts & eyes container -->
+  <div id="floating-bg" class="absolute inset-0 -z-10"></div>
+
+  <!-- Main content -->
+  <main class="relative z-10 flex items-center justify-center min-h-screen p-6">
+    <div id="card" class="max-w-2xl w-full rounded-2xl bg-white/60 backdrop-blur-md shadow-xl p-8 sm:p-12 border border-white/40">
+      
+      <!-- Intro screen -->
+      <section id="intro">
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-center mb-4"
+            style="background: linear-gradient(90deg,#ff87c0,#b28cff,#8ad1ff);
+                   -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+          A little surprise ✨
+        </h1>
+        <p class="text-center text-sm sm:text-base text-gray-700 mb-6">
+          Enter your name (optional) — or just tap Start — and watch the magic happen.
+        </p>
+        <form id="start-form" class="flex flex-col sm:flex-row items-center gap-3 justify-center">
+          <input id="nameInput" type="text" placeholder="Your name (optional)"
+                 class="w-full sm:w-auto flex-1 bg-white/80 placeholder-gray-500 px-4 py-3 rounded-lg border border-white/50 focus:outline-none focus:ring-2 focus:ring-pink-300" />
+          <button type="submit"
+                  class="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-lg shadow hover:scale-[1.02] transition-transform">
+            Start
+          </button>
+        </form>
+      </section>
+
+      <!-- Result screen -->
+      <section id="result" class="hidden text-center">
+        <div id="forName" class="text-lg sm:text-xl text-gray-700 mb-4"></div>
+        <div class="inline-block px-6 py-4 rounded-xl bg-white/30 backdrop-blur-sm border border-white/30">
+          <p id="typedMessage"
+             class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight"
+             style="background: linear-gradient(90deg,#ff6aa6,#c39bff,#9be0ff);
+                    -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+          </p>
+        </div>
+        <div class="mt-6 flex items-center gap-3 justify-center">
+          <button id="replayBtn"
+                  class="px-4 py-2 bg-white/80 rounded-md text-sm font-medium border border-white/40">
+            Replay
+          </button>
+          <button id="musicBtn"
+                  class="px-4 py-2 bg-white/80 rounded-md text-sm font-medium border border-white/40">
+            Play Music
+          </button>
+        </div>
+      </section>
+
+      <!-- Audio -->
+      <audio id="bgMusic" src="assets/soft-music.mp3" loop></audio>
+    </div>
+  </main>
+
+  <!-- SVG templates for hearts and eyes -->
+  <template id="heart-template">
+    <svg class="w-7 h-7 text-pink-400 opacity-90" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 21s-7-4.35-9-6.72C1.2 11.8 2.05 7.5 5.6 6.02 
+               8.04 4.9 9.5 6.1 12 8.1c2.5-2 3.96-3.2 6.4-2.08
+               C21.95 7.5 22.8 11.8 21 14.28 19 16.65 12 21 12 21z"/>
+    </svg>
+  </template>
+
+  <template id="eye-template">
+    <svg class="w-9 h-5 text-purple-400 opacity-90" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/>
+      <circle cx="12" cy="12" r="3" fill="currentColor"/>
+    </svg>
+  </template>
+
+  <!-- Script -->
+  <script>
+    const message = "Your eyes look pretty beautiful";
+    const startForm = document.getElementById("start-form");
+    const introSection = document.getElementById("intro");
+    const resultSection = document.getElementById("result");
+    const forName = document.getElementById("forName");
+    const typedMessage = document.getElementById("typedMessage");
+    const replayBtn = document.getElementById("replayBtn");
+    const musicBtn = document.getElementById("musicBtn");
+    const bgMusic = document.getElementById("bgMusic");
+
+    // Typing animation
+    function typeMessage(msg, callback) {
+      typedMessage.innerHTML = "";
+      let i = 0;
+      const interval = setInterval(() => {
+        typedMessage.innerHTML = msg.slice(0, i+1) + '<span class="animate-blink">|</span>';
+        i++;
+        if (i === msg.length) {
+          clearInterval(interval);
+          if (callback) callback();
+        }
+      }, 60);
+    }
+
+    // Start form
+    startForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("nameInput").value.trim();
+      introSection.classList.add("hidden");
+      resultSection.classList.remove("hidden");
+      forName.textContent = name ? `For ${name},` : "For you,";
+      typeMessage(message);
+    });
+
+    // Replay button
+    replayBtn.addEventListener("click", () => {
+      typeMessage(message);
+    });
+
+    // Music button
+    let playing = false;
+    musicBtn.addEventListener("click", () => {
+      playing = !playing;
+      if (playing) {
+        bgMusic.volume = 0.15;
+        bgMusic.play();
+        musicBtn.textContent = "Pause Music";
+      } else {
+        bgMusic.pause();
+        musicBtn.textContent = "Play Music";
+      }
+    });
+
+    // Floating background (hearts + eyes)
+    const floatingBg = document.getElementById("floating-bg");
+    const heartTemplate = document.getElementById("heart-template").content;
+    const eyeTemplate = document.getElementById("eye-template").content;
+
+    for (let i = 0; i < 15; i++) {
+      const node = (Math.random() > 0.5 ? heartTemplate : eyeTemplate).cloneNode(true);
+      const el = node.firstElementChild;
+      el.style.position = "absolute";
+      el.style.left = Math.random() * 90 + "%";
+      el.style.top = Math.random() * 80 + "%";
+      el.style.animation = `floatyUp ${6 + Math.random() * 6}s ease-in-out infinite`;
+      floatingBg.appendChild(el);
+    }
+  </script>
+</body>
+</html>
